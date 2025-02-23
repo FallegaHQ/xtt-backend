@@ -1,7 +1,7 @@
 {
-  "name": "laravel/laravel",
+  "name": "xana/xtt",
   "type": "project",
-  "description": "The skeleton application for the Laravel framework.",
+  "description": "A simple yet powerful transactions tracker.",
   "keywords": [
     "laravel",
     "framework"
