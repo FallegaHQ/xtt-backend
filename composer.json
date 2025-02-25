@@ -53,11 +53,23 @@
     "dev": [
       "Composer\\Config::disableProcessTimeout",
       "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
+
     ],
     "start": [
       "Composer\\Config::disableProcessTimeout",
       "@php artisan serve"
-    ]
+    ],
+    "test": [
+      "@prepare:test",
+      "XDEBUG_MODE=coverage php artisan test --coverage --min=75"
+    ],
+    "prepare:test": [
+      "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
+      "@php -r \"file_exists('.env.testing') || copy('.env', '.env.testing');\"",
+      "@php artisan jwt:secret --env=testing --force",
+      "@php artisan migrate:fresh --database=sqlite --env=testing"
+    ],
+    "test:report": "XDEBUG_MODE=coverage php artisan test --coverage-html tests/reports/coverage"
   },
   "extra": {
     "laravel": {

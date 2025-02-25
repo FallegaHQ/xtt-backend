@@ -6,6 +6,7 @@
 /storage/*.key
 /storage/pail
 /vendor
+.env.testing
 .env.local
 .env.backup
 .env.production
@@ -21,3 +22,5 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+/tests/reports
+/database/database.sqlite

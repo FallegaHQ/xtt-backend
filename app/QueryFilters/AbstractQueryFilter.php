@@ -79,7 +79,7 @@ class AbstractQueryFilter{
             }
 
             if(in_array($field, $this->likeFilterFields)){
-                $builder->where($this->tableName . '.' . $field, 'LIKE', "%$value%");
+                $builder->where("$this->tableName.$field", 'LIKE', "%$value%");
             }
             else if(is_array($value)){
                 $builder->whereIn($field, $value);
@@ -160,7 +160,7 @@ class AbstractQueryFilter{
                 $this->applyDateOperator($builder, $field, $operator, $date);
             }
             else{
-                $builder->whereDate($this->tableName . '.' . $field, Carbon::parse($value));
+                $builder->whereDate("$this->tableName.$field", Carbon::parse($value));
             }
 
             return;
@@ -169,7 +169,7 @@ class AbstractQueryFilter{
         // Handle array/object of conditions
         if(is_array($value)){
             // Handle date range with start/end
-            if(isset($value['start']) && isset($value['end'])){
+            if(isset($value['start'], $value['end'])){
                 $builder->whereBetween($this->tableName . '.' . $field, [
                     Carbon::parse($value['start'])
                           ->startOfDay(),
@@ -193,12 +193,12 @@ class AbstractQueryFilter{
      * @param Builder $builder
      * @param string  $field
      * @param string  $operator
-     * @param string  $date
+     * @param string  $dateIn
      *
      * @return void
      */
-    protected function applyDateOperator(Builder $builder, string $field, string $operator, string $date): void{
-        $date = Carbon::parse($date);
+    protected function applyDateOperator(Builder $builder, string $field, string $operator, string $dateIn): void{
+        $date = Carbon::parse($dateIn);
 
         switch(strtolower($operator)){
             case 'before':

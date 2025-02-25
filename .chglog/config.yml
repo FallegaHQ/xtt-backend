@@ -1,0 +1,38 @@
+style   : github
+template: CHANGELOG.tpl.md
+info:
+    title: CHANGELOG
+    repository_url: "https://github.com/FallegaHQ/xtt-backend"
+
+options:
+    commits:
+        filters:
+            Type:
+                - feat
+                - fix
+                - docs
+                - style
+                - refactor
+                - perf
+                - test
+                - chore
+    commit_groups:
+        title_maps:
+            feat: "✨ Features"
+            fix: "🐛 Bug Fixes"
+            docs: "📖 Documentation"
+            style: "🎨 Code Styling"
+            refactor: "🔨 Refactoring"
+            perf: "⚡ Performance Improvements"
+            test: "🧪 Tests"
+            chore: "🔧 Chores"
+    header:
+        pattern: "^([a-zA-Z]+)(?:\\((.+)\\))?!?: (.+)$"
+        pattern_maps:
+            - Type
+            - Scope
+            - Subject
+    note_groups:
+        title_maps:
+            BREAKING CHANGE: "🚨 Breaking Changes"
+    tag_filter_pattern: "[0-9]+.[0-9]+.[0-9]+"

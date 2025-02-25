@@ -40,7 +40,7 @@ class Transaction extends Model{
     protected function casts(): array{
         return [
             'date' => 'datetime',
-            'type'             => TransactionType::class,
+            'type' => TransactionType::class,
         ];
     }
 }

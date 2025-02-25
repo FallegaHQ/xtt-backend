@@ -1,0 +1,125 @@
+name: Create Release on Merge to Master
+
+on:
+    push:
+        branches:
+            - master
+
+jobs:
+    build:
+        if: "!contains(github.event.head_commit.message, 'chore: update changelog')"
+        name: Build Laravel Project
+        runs-on: ubuntu-latest
+        
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.3'
+                  coverage: none
+                  tools: composer:v2
+
+            - name: Install dependencies
+              run: composer install --no-dev --optimize-autoloader
+
+            - name: Set up Laravel environment
+              run: |
+                  cp .env.example .env
+                  php artisan key:generate
+
+            - name: Package Laravel Application
+              run: |
+                  zip -r backend-build.zip . -x "vendor/*" "node_modules/*" "tests/*" ".git/*" ".github/*"
+              shell: bash
+
+            - name: Upload build artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: backend-build
+                  path: backend-build.zip
+    
+    versioning:
+        name: Determine Version
+        runs-on: ubuntu-latest
+        outputs:
+            new_version: ${{ steps.tag.outputs.new_tag }}
+        needs: build
+        
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Generate New Tag
+              id: tag
+              uses: anothrNick/github-tag-action@1.71.0
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  DEFAULT_BUMP: patch
+                  RELEASE_BRANCHES: master
+                  MAJOR_STRING_TOKEN: BREAKING CHANGE
+                  MINOR_STRING_TOKEN: feat
+    
+    changelog:
+        name: Generate Changelog
+        runs-on: ubuntu-latest
+        needs: versioning
+        
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  token: '${{ secrets.PAT }}'
+
+            - name: Install git-chglog
+              run: |
+                  curl -sSL https://github.com/git-chglog/git-chglog/releases/download/v0.15.4/git-chglog_0.15.4_linux_amd64.tar.gz | tar -xz
+                  sudo mv git-chglog /usr/local/bin/
+
+            - name: Generate Changelog
+              run: git-chglog -o CHANGELOG.md
+
+            - name: Push The Changelog
+              uses: EndBug/add-and-commit@v9
+              with:
+                  author_name: 'GitHub Actions'
+                  author_email: 'github-actions@github.com'
+                  message: 'chore: update changelog for new release'
+                  add: 'CHANGELOG.md'
+                  github_token: '${{ secrets.PAT }}'
+
+            - name: Upload Changelog
+              uses: actions/upload-artifact@v4
+              with:
+                  name: changelog
+                  path: CHANGELOG.md
+    
+    publish:
+        name: Publish Release
+        runs-on: ubuntu-latest
+        needs: [versioning, changelog]
+        
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Download build artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: backend-build
+
+            - name: Publish GitHub Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: "${{ needs.versioning.outputs.new_version }}"
+                  name: Release ${{ needs.versioning.outputs.new_version }}
+                  body_path: CHANGELOG.md
+                  files: backend-build.zip
+                  make_latest: true
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
