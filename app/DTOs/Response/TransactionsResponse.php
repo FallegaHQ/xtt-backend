@@ -17,8 +17,8 @@ class TransactionsResponse extends ResponseData{
          *     count: int
          * } $data
          */
-        $data = [];
-        $data['count'] = count($transactions);
+        $data                 = [];
+        $data['count']        = count($transactions);
         $data['transactions'] = [];
         foreach($transactions as $transaction){
             $data['transactions'][] = new Transaction($transaction);

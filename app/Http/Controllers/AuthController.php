@@ -3,16 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller{
     public function __construct(){}
 
-    public function register(Request $request){
+    public function register(Request $request): JsonResponse{
         $validator = Validator::make($request->all(), [
             'name'     => 'required|string|max:255',
             'email'    => 'required|string|email|max:255|unique:users',
@@ -20,16 +20,27 @@ class AuthController extends Controller{
         ]);
 
         if($validator->fails()){
-            return response()->json($validator->errors(), Response::HTTP_UNPROCESSABLE_ENTITY);
+            return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $user = User::create([
-                                 'name'     => $request->name,
-                                 'email'    => $request->email,
-                                 'password' => Hash::make($request->password),
-                             ]);
+        $user = User::create(
+            request(
+                [
+                    'name',
+                    'email',
+                    'password',
+                ],
+            ),
+        );
 
-        $token = auth()->attempt($user);
+        $token = auth()->attempt(
+            request(
+                [
+                    'email',
+                    'password',
+                ],
+            ),
+        );
 
         return response()->json([
                                     'status'        => 'success',
@@ -42,14 +53,14 @@ class AuthController extends Controller{
                                 ]);
     }
 
-    public function login(Request $request){
+    public function login(Request $request): JsonResponse{
         $validator = Validator::make($request->all(), [
             'email'    => 'required|email',
             'password' => 'required|string',
         ]);
 
         if($validator->fails()){
-            return response()->json($validator->errors(), 422);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
         $credentials = $request->only('email', 'password');
@@ -72,7 +83,7 @@ class AuthController extends Controller{
                                 ]);
     }
 
-    public function logout(){
+    public function logout(): JsonResponse{
         Auth::logout();
 
         return response()->json([
@@ -81,7 +92,7 @@ class AuthController extends Controller{
                                 ]);
     }
 
-    public function refresh(Request $request){
+    public function refresh(Request $request): JsonResponse{
         return response()->json([
                                     'status'        => 'success',
                                     'user'          => Auth::user(),
@@ -92,7 +103,7 @@ class AuthController extends Controller{
                                 ]);
     }
 
-    public function me(){
+    public function me(): JsonResponse{
         return response()->json(Auth::user());
     }
 }

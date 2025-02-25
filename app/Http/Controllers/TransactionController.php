@@ -8,6 +8,7 @@ use App\DTOs\Response\TransactionsResponse;
 use App\Enums\TransactionType;
 use App\Models\Transaction;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Enum;
 use Response;
@@ -16,7 +17,7 @@ class TransactionController extends Controller{
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request){
+    public function index(Request $request): JsonResponse{
         // Show all transactions for the authenticated user
         $transactions = Transaction::where('user_id', auth()->user()->id)
                                    ->filter($request->all())
@@ -31,22 +32,22 @@ class TransactionController extends Controller{
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request){
+    public function store(Request $request): JsonResponse{
         $request->validate([
-                               'type'       => [
+                               'type'   => [
                                    'required',
                                    new Enum(TransactionType::class),
                                ],
-                               'amount'     => 'required|numeric|min:0.1',
+                               'amount' => 'required|numeric|min:0.1',
                            ]);
 
         // Create the transaction
-        $transaction                   = new Transaction();
-        $transaction->user_id          = auth()->user()->id;
-        $transaction->type             = $request->type;
-        $transaction->amount           = $request->amount;
-        $transaction->description      = $request->description ?? '';
-        $transaction->date = Carbon::now();
+        $transaction              = new Transaction();
+        $transaction->user_id     = auth()->user()->id;
+        $transaction->type        = $request->type;
+        $transaction->amount      = $request->amount;
+        $transaction->description = $request->description ?? '';
+        $transaction->date        = Carbon::now();
         $transaction->save();
 
         return Response::json(new TransactionDTO($transaction));
@@ -55,21 +56,21 @@ class TransactionController extends Controller{
     /**
      * Display the specified resource.
      */
-    public function show(Transaction $transaction){
+    public function show(Transaction $transaction): void{
         //
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Transaction $transaction){
+    public function update(Request $request, Transaction $transaction): void{
         //
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Transaction $transaction){
+    public function destroy(Transaction $transaction): void{
         //
     }
 }
