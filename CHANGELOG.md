@@ -2,6 +2,43 @@
 
 
 
+## 0.1.0 (2025-03-01)
+
+
+
+### ✨ Features
+
+
+
+- **app:** Introduce Balances ([219484e](https://github.com/FallegaHQ/xtt-backend/commit/219484ebaff2ae041050bd80e6fac9c0fd6ebf6d))
+  
+  
+
+### 🔧 Chores
+
+
+
+- update changelog for new release ([32b4998](https://github.com/FallegaHQ/xtt-backend/commit/32b4998c5f49a56ded3190bccd10c4c668ebbe94))
+  
+  
+
+
+
+### 
+
+
+
+- a balance
+  
+
+- Each User has multiple balance, transactions are made from balances now
+  
+
+- Each balance has a currency
+  
+  
+  
+
 ## 0.0.2 (2025-02-27)
 
 
