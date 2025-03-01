@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\TransactionType;
 use App\QueryFilters\TransactionQueryFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasTimestamps;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,18 +15,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Transaction extends Model{
     /** @use HasFactory<\Database\Factories\TransactionFactory> */
-    use HasFactory;
+    use HasFactory, HasTimestamps;
 
     protected $fillable = [
-        'user_id',
         'type',
         'amount',
         'description',
         'date',
     ];
 
-    public function user(): BelongsTo{
-        return $this->belongsTo(User::class);
+    /**
+     * @return BelongsTo<Balance, Transaction>
+     */
+    public function balance(): BelongsTo{
+        return $this->belongsTo(Balance::class);
     }
 
     public function scopeFilter(Builder $query, array $filters = []): Builder{

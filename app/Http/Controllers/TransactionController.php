@@ -19,7 +19,9 @@ class TransactionController extends Controller{
      */
     public function index(Request $request): JsonResponse{
         // Show all transactions for the authenticated user
-        $transactions = Transaction::where('user_id', auth()->user()->id)
+        $transactions = Transaction::whereHas('balance', function($query){
+            $query->where('user_id', auth()->user()->id);
+        })
                                    ->filter($request->all())
                                    ->orderBy('date', 'desc')
                                    ->get();
@@ -34,20 +36,31 @@ class TransactionController extends Controller{
      */
     public function store(Request $request): JsonResponse{
         $request->validate([
-                               'type'   => [
+                               'type'       => [
                                    'required',
                                    new Enum(TransactionType::class),
                                ],
-                               'amount' => 'required|numeric|min:0.1',
+                               'amount'     => 'required|numeric|min:0.1',
+                               'balance_id' => 'required|exists:balances,id',
                            ]);
+
+        $balance = auth()
+            ->user()
+            ->balances()
+            ->find($request->balance_id);
+
+        if(!$balance){
+            return response()->json(['error' => 'Balance not found for the user.'], 404);
+        }
 
         // Create the transaction
         $transaction              = new Transaction();
-        $transaction->user_id     = auth()->user()->id;
         $transaction->type        = $request->type;
         $transaction->amount      = $request->amount;
         $transaction->description = $request->description ?? '';
         $transaction->date        = Carbon::now();
+        $transaction->balance()
+                    ->associate($balance);
         $transaction->save();
 
         return Response::json(new TransactionDTO($transaction));

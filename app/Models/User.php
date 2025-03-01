@@ -33,8 +33,11 @@ class User extends Authenticatable implements JWTSubject{
         'remember_token',
     ];
 
-    public function transactions(): HasMany{
-        return $this->hasMany(Transaction::class);
+    /**
+     * @return HasMany<Balance, User>
+     */
+    public function balances(): HasMany{
+        return $this->hasMany(Balance::class);
     }
 
     public function getJWTIdentifier(){

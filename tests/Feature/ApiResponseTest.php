@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\DTOs\Response\ApiResponse;
 use App\DTOs\Response\TransactionsResponse;
-use App\Enums\TransactionType;
+use App\Models\Balance;
 use App\Models\Transaction;
 use App\Models\User;
 use Carbon\Carbon;
@@ -17,32 +17,25 @@ use function json_encode;
 class ApiResponseTest extends TestCase{
     #[Test]
     public function shouldReturnTransactionsList(): void{
-        $user        = new User();
-        $user->id    = 1;
-        $user->name  = 'John Doe';
-        $user->email = 'john@doe.com';
+        $transactionFactory = Transaction::factory()
+                                         ->count(5);
+        $balanceFactory     = Balance::factory()
+                                     ->has($transactionFactory);
+        $user               = User::factory()
+                                  ->has($balanceFactory)
+                                  ->create();
 
-        $transaction         = new Transaction();
-        $transaction->id     = 1;
-        $transaction->amount = 100;
-        $transaction->user()
-                    ->associate($user);
-        $transaction->type        = TransactionType::Debt;
-        $transaction->description = "desc";
-        $transaction->date        = new Carbon("22-01-2002");
-
-        $transactionsCollection = new Collection([$transaction]);
-        $transactionsResponse   = new TransactionsResponse($transactionsCollection);
+        $transactionsResponse   = new TransactionsResponse($user->balances->first()->transactions->collect());
 
         $result = ApiResponse::withData($transactionsResponse, meta: ['meta1' => "value"]);
 
-        $data = json_decode(json_encode($result), true);
+        $data = json_decode(json_encode($result), true, 512, JSON_THROW_ON_ERROR);
 
         self::assertArrayHasKey("data", $data);
         self::assertArrayHasKey("code", $data);
         self::assertSame(200, $data["code"]);
         self::assertArrayHasKey("count", $data["data"]);
-        self::assertSame(1, $data["data"]["count"]);
-        self::assertCount(1, $data["data"]["transactions"]);
+        self::assertSame(5, $data["data"]["count"]);
+        self::assertCount(5, $data["data"]["transactions"]);
     }
 }
