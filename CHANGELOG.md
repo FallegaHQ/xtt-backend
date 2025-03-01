@@ -2,6 +2,29 @@
 
 
 
+## 0.1.1 (2025-03-01)
+
+
+
+### 🐛 Bug Fixes
+
+
+
+- **devops:** Removed .chglog from build and .editorconfig from the repo ([a185f41](https://github.com/FallegaHQ/xtt-backend/commit/a185f41bfe73df247deca60a0d00f713e36503f3))
+  
+  
+
+### 🔧 Chores
+
+
+
+- update changelog for new release ([6270dc7](https://github.com/FallegaHQ/xtt-backend/commit/6270dc712bda533e1a02930e00e950b861746826))
+  
+  
+
+
+  
+
 ## 0.1.0 (2025-03-01)
 
 
