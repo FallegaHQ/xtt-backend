@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BalanceController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
@@ -54,5 +55,6 @@ Route::prefix('v1')
          Route::group(['middleware' => 'auth:api'], function(){
              // Transactions
              Route::apiResource('transactions', TransactionController::class);
+             Route::apiResource('balances', BalanceController::class);
          });
      });

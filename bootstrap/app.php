@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpInconsistentReturnPointsInspection */
 
 use App\Http\Middleware\ForceJsonResponse;
 use Illuminate\Auth\AuthenticationException;
@@ -9,10 +10,12 @@ use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Http\Middleware\CheckResponseForModifications;
 use Illuminate\Http\Middleware\HandleCors;
+use Illuminate\Support\Env;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-return Application::configure(basePath: dirname(__DIR__))
+$app = Application::configure(basePath: dirname(__DIR__))
                   ->withRouting(
                       web     : __DIR__ . '/../routes/web.php',
                       api     : __DIR__ . '/../routes/api.php',
@@ -79,3 +82,24 @@ return Application::configure(basePath: dirname(__DIR__))
                       });
                   })
                   ->create();
+
+if($app->environmentFile() === '.env.testing'){
+    $envPath = '.env.testing';
+}
+else{
+    $envPath = '.env.local';
+
+    $environment = Env::get('APP_ENV');
+
+    if($environment){
+        $envPath = '.env.' . $environment;
+    }
+    if($app->runningInConsole() && ($input = new ArgvInput())->hasParameterOption('--env')){
+        $envPath = '.env.' . $input->getParameterOption('--env', 'local');
+    }
+}
+if(file_exists($app->environmentPath() . DIRECTORY_SEPARATOR . $envPath)){
+    $app->loadEnvironmentFrom($envPath);
+}
+
+return $app;

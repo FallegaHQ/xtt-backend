@@ -3,6 +3,7 @@
 namespace Tests\Feature\Http\Controllers;
 
 use App\Enums\TransactionType;
+use App\Models\Balance;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,17 +19,18 @@ class TransactionControllerTest extends TestCase{
     #[Test]
     public function shouldIndexReturnsUserTransactions(): void{
         // Create some transactions for the user
+
         $transactions = Transaction::factory()
                                    ->count(3)
                                    ->create([
-                                                'user_id' => $this->user->id,
+                                                'balance_id' => $this->user->balances()->first()->id,
                                             ]);
 
         // Create transactions for another user that shouldn't be returned
         Transaction::factory()
                    ->count(2)
                    ->create([
-                                'user_id' => $this->user2->id,
+                                'balance_id' => $this->user2->balances()->first()->id,
                             ]);
 
         $response = $this->actingAs($this->user)
@@ -53,16 +55,19 @@ class TransactionControllerTest extends TestCase{
     #[Test]
     public function shouldIndexWithFilters(): void{
         // Create transactions with different descriptions and dates
+
         Transaction::factory()
                    ->create([
-                                'user_id'     => $this->user->id,
+                                //'user_id'     => $this->user->id,
+                                'balance_id' => $this->user->balances()->first()->id,
                                 'description' => 'groceries',
                                 'date'        => now()->subDays(5),
                             ]);
 
         Transaction::factory()
                    ->create([
-                                'user_id'     => $this->user->id,
+                                //'user_id'     => $this->user->id,
+                                'balance_id' => $this->user->balances()->first()->id,
                                 'description' => 'rent',
                                 'date'        => now()->subDays(2),
                             ]);
@@ -95,6 +100,7 @@ class TransactionControllerTest extends TestCase{
             'type'        => TransactionType::Debt->value,
             'amount'      => 50.75,
             'description' => 'Test transaction',
+            'balance_id'=>1
         ];
 
         $response = $this->actingAs($this->user)
@@ -103,7 +109,6 @@ class TransactionControllerTest extends TestCase{
         $response->assertStatus(200)
                  ->assertJsonStructure([
                                            'id',
-                                           'user',
                                            'type',
                                            'amount',
                                            'description',
@@ -112,7 +117,7 @@ class TransactionControllerTest extends TestCase{
 
         // Check the transaction was created in the database
         $this->assertDatabaseHas('transactions', [
-            'user_id'     => $this->user->id,
+            //'user_id'     => $this->user->id,
             'type'        => TransactionType::Debt->value,
             'amount'      => 50.75,
             'description' => 'Test transaction',
@@ -190,9 +195,9 @@ class TransactionControllerTest extends TestCase{
         parent::setUp();
 
         // Create a user for testing
-        $this->user  = User::factory()
+        $this->user  = User::factory()->has(Balance::factory())
                            ->create();
-        $this->user2 = User::factory()
+        $this->user2 = User::factory()->has(Balance::factory())
                            ->create();
     }
 }
